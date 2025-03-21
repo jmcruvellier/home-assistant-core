@@ -1,4 +1,5 @@
 """Support for ISY switches."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -24,16 +25,16 @@ from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN
 from .entity import ISYAuxControlEntity, ISYNodeEntity, ISYProgramEntity
 from .models import IsyData
 
 
-@dataclass
+@dataclass(frozen=True)
 class ISYSwitchEntityDescription(SwitchEntityDescription):
-    """Describes IST switch."""
+    """Describes ISY switch."""
 
     # ISYEnableSwitchEntity does not support UNDEFINED or None,
     # restrict the type to str.
@@ -41,7 +42,9 @@ class ISYSwitchEntityDescription(SwitchEntityDescription):
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the ISY switch platform."""
     isy_data: IsyData = hass.data[DOMAIN][entry.entry_id]
@@ -156,6 +159,7 @@ class ISYEnableSwitchEntity(ISYAuxControlEntity, SwitchEntity):
         self._attr_name = description.name  # Override super
         self._change_handler: EventListener = None
 
+    # pylint: disable-next=hass-missing-super-call
     async def async_added_to_hass(self) -> None:
         """Subscribe to the node control change events."""
         self._change_handler = self._node.isy.nodes.status_events.subscribe(

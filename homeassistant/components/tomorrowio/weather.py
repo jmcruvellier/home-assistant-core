@@ -1,4 +1,5 @@
 """Weather component that handles meteorological data for your location."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -24,7 +25,6 @@ from homeassistant.components.weather import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_API_KEY,
-    CONF_NAME,
     UnitOfLength,
     UnitOfPrecipitationDepth,
     UnitOfPressure,
@@ -33,11 +33,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.sun import is_up
 from homeassistant.util import dt as dt_util
 
-from . import TomorrowioDataUpdateCoordinator, TomorrowioEntity
 from .const import (
     CLEAR_CONDITIONS,
     CONDITIONS,
@@ -60,12 +59,14 @@ from .const import (
     TMRW_ATTR_WIND_DIRECTION,
     TMRW_ATTR_WIND_SPEED,
 )
+from .coordinator import TomorrowioDataUpdateCoordinator
+from .entity import TomorrowioEntity
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up a config entry."""
     coordinator = hass.data[DOMAIN][config_entry.data[CONF_API_KEY]]
@@ -118,7 +119,7 @@ class TomorrowioWeatherEntity(TomorrowioEntity, SingleCoordinatorWeatherEntity):
         self._attr_entity_registry_enabled_default = (
             forecast_type == DEFAULT_FORECAST_TYPE
         )
-        self._attr_name = f"{config_entry.data[CONF_NAME]} - {forecast_type.title()}"
+        self._attr_name = forecast_type.title()
         self._attr_unique_id = _calculate_unique_id(
             config_entry.unique_id, forecast_type
         )
@@ -297,11 +298,6 @@ class TomorrowioWeatherEntity(TomorrowioEntity, SingleCoordinatorWeatherEntity):
                 break
 
         return forecasts
-
-    @property
-    def forecast(self) -> list[Forecast] | None:
-        """Return the forecast array."""
-        return self._forecast(self.forecast_type)
 
     @callback
     def _async_forecast_daily(self) -> list[Forecast] | None:

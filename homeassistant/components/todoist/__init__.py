@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = datetime.timedelta(minutes=1)
 
 
-PLATFORMS: list[Platform] = [Platform.CALENDAR]
+PLATFORMS: list[Platform] = [Platform.CALENDAR, Platform.TODO]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -25,7 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     token = entry.data[CONF_TOKEN]
     api = TodoistAPIAsync(token)
-    coordinator = TodoistCoordinator(hass, _LOGGER, SCAN_INTERVAL, api, token)
+    coordinator = TodoistCoordinator(hass, _LOGGER, entry, SCAN_INTERVAL, api, token)
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})

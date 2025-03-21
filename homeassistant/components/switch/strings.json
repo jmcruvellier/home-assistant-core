@@ -25,10 +25,18 @@
       }
     },
     "switch": {
-      "name": "[%key:component::switch::entity_component::_::name%]"
+      "name": "[%key:component::switch::title%]",
+      "state": {
+        "off": "[%key:common::state::off%]",
+        "on": "[%key:common::state::on%]"
+      }
     },
     "outlet": {
-      "name": "Outlet"
+      "name": "Outlet",
+      "state": {
+        "off": "[%key:common::state::off%]",
+        "on": "[%key:common::state::on%]"
+      }
     }
   },
   "services": {

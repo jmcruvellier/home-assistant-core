@@ -1,4 +1,5 @@
 """The nut component."""
+
 from __future__ import annotations
 
 from homeassistant.const import Platform
@@ -14,21 +15,14 @@ DEFAULT_PORT = 3493
 KEY_STATUS = "ups.status"
 KEY_STATUS_DISPLAY = "ups.status.display"
 
-COORDINATOR = "coordinator"
 DEFAULT_SCAN_INTERVAL = 60
-
-PYNUT_DATA = "data"
-PYNUT_UNIQUE_ID = "unique_id"
-
-
-USER_AVAILABLE_COMMANDS = "user_available_commands"
 
 STATE_TYPES = {
     "OL": "Online",
     "OB": "On Battery",
     "LB": "Low Battery",
     "HB": "High Battery",
-    "RB": "Battery Needs Replaced",
+    "RB": "Battery Needs Replacement",
     "CHRG": "Battery Charging",
     "DISCHRG": "Battery Discharging",
     "BYPASS": "Bypass Active",
@@ -39,6 +33,8 @@ STATE_TYPES = {
     "BOOST": "Boosting Voltage",
     "FSD": "Forced Shutdown",
     "ALARM": "Alarm",
+    "HE": "ECO Mode",
+    "TEST": "Battery Testing",
 }
 
 COMMAND_BEEPER_DISABLE = "beeper.disable"
@@ -67,6 +63,10 @@ COMMAND_TEST_FAILURE_STOP = "test.failure.stop"
 COMMAND_TEST_PANEL_START = "test.panel.start"
 COMMAND_TEST_PANEL_STOP = "test.panel.stop"
 COMMAND_TEST_SYSTEM_START = "test.system.start"
+COMMAND_OUTLET_1_LOAD_OFF = "outlet.1.load.off"
+COMMAND_OUTLET_1_LOAD_ON = "outlet.1.load.on"
+COMMAND_OUTLET_2_LOAD_OFF = "outlet.2.load.off"
+COMMAND_OUTLET_2_LOAD_ON = "outlet.2.load.on"
 
 INTEGRATION_SUPPORTED_COMMANDS = {
     COMMAND_BEEPER_DISABLE,
@@ -95,4 +95,8 @@ INTEGRATION_SUPPORTED_COMMANDS = {
     COMMAND_TEST_PANEL_START,
     COMMAND_TEST_PANEL_STOP,
     COMMAND_TEST_SYSTEM_START,
+    COMMAND_OUTLET_1_LOAD_OFF,
+    COMMAND_OUTLET_1_LOAD_ON,
+    COMMAND_OUTLET_2_LOAD_OFF,
+    COMMAND_OUTLET_2_LOAD_ON,
 }

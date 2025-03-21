@@ -1,9 +1,10 @@
 """The opensky component."""
+
 from __future__ import annotations
 
 from aiohttp import BasicAuth
 from python_opensky import OpenSky
-from python_opensky.exceptions import OpenSkyUnauthenticatedError
+from python_opensky.exceptions import OpenSkyError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -28,10 +29,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 ),
                 contributing_user=entry.options.get(CONF_CONTRIBUTING_USER, False),
             )
-        except OpenSkyUnauthenticatedError as exc:
+        except OpenSkyError as exc:
             raise ConfigEntryNotReady from exc
 
-    coordinator = OpenSkyDataUpdateCoordinator(hass, client)
+    coordinator = OpenSkyDataUpdateCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 

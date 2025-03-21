@@ -1,4 +1,5 @@
 """Demo platform that offers fake meteorological data."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -25,10 +26,9 @@ from homeassistant.components.weather import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfPressure, UnitOfSpeed, UnitOfTemperature
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-import homeassistant.util.dt as dt_util
+from homeassistant.util import dt as dt_util
 
 CONDITION_CLASSES: dict[str, list[str]] = {
     ATTR_CONDITION_CLOUDY: [],
@@ -58,20 +58,10 @@ WEATHER_UPDATE_INTERVAL = timedelta(minutes=30)
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Demo config entry."""
-    setup_platform(hass, {}, async_add_entities)
-
-
-def setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
-) -> None:
-    """Set up the Demo weather."""
-    add_entities(
+    async_add_entities(
         [
             DemoWeather(
                 "South",

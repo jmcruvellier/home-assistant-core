@@ -1,4 +1,5 @@
 """SMA Solar Webconnect interface."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,7 +15,6 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
-    POWER_VOLT_AMPERE_REACTIVE,
     EntityCategory,
     UnitOfApparentPower,
     UnitOfElectricCurrent,
@@ -22,11 +22,12 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfReactivePower,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -44,6 +45,12 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
     "operating_status_general": SensorEntityDescription(
         key="operating_status_general",
         name="Operating Status General",
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    "operating_status": SensorEntityDescription(
+        key="operating_status",
+        name="Operating Status",
         entity_registry_enabled_default=False,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -139,6 +146,13 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
         device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
+    "pv_isolation_resistance": SensorEntityDescription(
+        key="pv_isolation_resistance",
+        name="PV Isolation Resistance",
+        native_unit_of_measurement="kOhms",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_registry_enabled_default=False,
+    ),
     "insulation_residual_current": SensorEntityDescription(
         key="insulation_residual_current",
         name="Insulation Residual Current",
@@ -146,6 +160,13 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
+    ),
+    "pv_power": SensorEntityDescription(
+        key="pv_power",
+        name="PV Power",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
     ),
     "grid_power": SensorEntityDescription(
         key="grid_power",
@@ -189,7 +210,7 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
     "grid_reactive_power": SensorEntityDescription(
         key="grid_reactive_power",
         name="Grid Reactive Power",
-        native_unit_of_measurement=POWER_VOLT_AMPERE_REACTIVE,
+        native_unit_of_measurement=UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.REACTIVE_POWER,
         entity_registry_enabled_default=False,
@@ -197,7 +218,7 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
     "grid_reactive_power_l1": SensorEntityDescription(
         key="grid_reactive_power_l1",
         name="Grid Reactive Power L1",
-        native_unit_of_measurement=POWER_VOLT_AMPERE_REACTIVE,
+        native_unit_of_measurement=UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.REACTIVE_POWER,
         entity_registry_enabled_default=False,
@@ -205,7 +226,7 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
     "grid_reactive_power_l2": SensorEntityDescription(
         key="grid_reactive_power_l2",
         name="Grid Reactive Power L2",
-        native_unit_of_measurement=POWER_VOLT_AMPERE_REACTIVE,
+        native_unit_of_measurement=UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.REACTIVE_POWER,
         entity_registry_enabled_default=False,
@@ -213,7 +234,7 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
     "grid_reactive_power_l3": SensorEntityDescription(
         key="grid_reactive_power_l3",
         name="Grid Reactive Power L3",
-        native_unit_of_measurement=POWER_VOLT_AMPERE_REACTIVE,
+        native_unit_of_measurement=UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.REACTIVE_POWER,
         entity_registry_enabled_default=False,
@@ -260,8 +281,6 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
     "grid_power_factor_excitation": SensorEntityDescription(
         key="grid_power_factor_excitation",
         name="Grid Power Factor Excitation",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.POWER_FACTOR,
         entity_registry_enabled_default=False,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -478,6 +497,30 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
+    ),
+    "sps_voltage": SensorEntityDescription(
+        key="sps_voltage",
+        name="Secure Power Supply Voltage",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    "sps_current": SensorEntityDescription(
+        key="sps_current",
+        name="Secure Power Supply Current",
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+    "sps_power": SensorEntityDescription(
+        key="sps_power",
+        name="Secure Power Supply Power",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+        entity_registry_enabled_default=False,
     ),
     "optimizer_power": SensorEntityDescription(
         key="optimizer_power",
@@ -795,7 +838,7 @@ SENSOR_ENTITIES: dict[str, SensorEntityDescription] = {
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up SMA sensors."""
     sma_data = hass.data[DOMAIN][config_entry.entry_id]
@@ -807,19 +850,16 @@ async def async_setup_entry(
     if TYPE_CHECKING:
         assert config_entry.unique_id
 
-    entities = []
-    for sensor in used_sensors:
-        entities.append(
-            SMAsensor(
-                coordinator,
-                config_entry.unique_id,
-                SENSOR_ENTITIES.get(sensor.name),
-                device_info,
-                sensor,
-            )
+    async_add_entities(
+        SMAsensor(
+            coordinator,
+            config_entry.unique_id,
+            SENSOR_ENTITIES.get(sensor.name),
+            device_info,
+            sensor,
         )
-
-    async_add_entities(entities)
+        for sensor in used_sensors
+    )
 
 
 class SMAsensor(CoordinatorEntity, SensorEntity):
